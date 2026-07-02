@@ -1,9 +1,14 @@
 var express = require('express');
 var router = express.Router();
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express', config: require('../config') });
-});
+const fs = require('fs');
+let routes = fs.readdirSync(__dirname);
+
+for (let route of routes) {
+    if(route !== "index.js" && route.endsWith(".js")) {
+        router.use(`/${route.replace(".js", "")}`, require(`./${route}`));
+        console.log(`Route /${route.replace(".js", "")} loaded`);
+    }
+}
 
 module.exports = router;
