@@ -4,7 +4,7 @@ const Response = require('../lib/Response');
 const AuditLogs = require('../db/models/AuditLogs');
 const moment = require("moment")
 
-router.post("/", (req, res, next) => {
+router.post("/", async (req, res, next) => {
     try {
 
         let body = req.body
@@ -36,8 +36,10 @@ router.post("/", (req, res, next) => {
         let auditLogs = await AuditLogs.find(query).sort({created_at: -1}).skip(skip).limit(limit);
         res.json(Response.successResponse(auditLogs));
     }
-    catch {
+    catch(error) {
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
     }
 })
+
+module.exports = router;

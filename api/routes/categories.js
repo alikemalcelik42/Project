@@ -5,6 +5,7 @@ const Response = require('../lib/Response');
 const CustomError = require('../lib/Error');
 const Enum = require('../config/Enum');
 const mongoose = require('mongoose');
+const AuditLogger = require("../lib/AuditLogger");
 
 router.get('/', async function(req, res, next) {
 
@@ -32,6 +33,9 @@ router.post('/add', async function(req, res, next) {
         });
 
         await category.save();
+
+        AuditLogger.info(req.user?.email, "Categories", "Add", category);
+
         res.json(Response.successResponse({success: true}));
     }
     catch (error) {
@@ -65,6 +69,9 @@ router.post('/update', async function(req, res, next) {
             return res.status(errorResponse.code).json(errorResponse);
         }
 
+        AuditLogger.info(req.user?.email, "Categories", "Update", {id:body._id, updates:updates});
+
+
         res.json(Response.successResponse({success: true}));
     } catch (error) {
         let errorResponse = Response.errorResponse(error);
@@ -86,6 +93,9 @@ router.post('/delete', async function(req, res, next) {
 
     try {
         await Categories.findByIdAndDelete(body._id);
+
+        AuditLogger.info(req.user?.email, "Categories", "Delete", {id:body._id});
+
         res.json(Response.successResponse({success: true}));
     }   
     catch (error) {
