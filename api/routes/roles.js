@@ -8,7 +8,7 @@ const role_privileges = require('../config/role_privileges');
 const RolePrivileges = require('../db/models/RolePrivileges');
 const mongoose = require('mongoose');
 
-router.get('/', async function(req, res, next) {
+router.get('/', async function(req, res) {
 
     try {
         let roles = await Roles.find({});
@@ -19,7 +19,7 @@ router.get('/', async function(req, res, next) {
     }
 });
 
-router.post('/add', async function(req, res, next) {
+router.post('/add', async function(req, res) {
     let body = req.body;
     try {
         if (!body.role_name) {
@@ -58,7 +58,7 @@ router.post('/add', async function(req, res, next) {
     }   
 });
 
-router.post('/update', async function(req, res, next) {
+router.post('/update', async function(req, res) {
     try{
         let body = req.body;
 
@@ -115,7 +115,7 @@ router.post('/update', async function(req, res, next) {
     }
 });
 
-router.post('/delete', async function(req, res, next) {
+router.post('/delete', async function(req, res) {
     let body = req.body;
     if (!body._id) {
         let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
@@ -132,7 +132,7 @@ router.post('/delete', async function(req, res, next) {
     }
 });
 
-router.get('/role_privileges', async function(req, res, next) {
+router.get('/role_privileges', async function(req, res) {
     res.json(Response.successResponse(role_privileges));
 });
 

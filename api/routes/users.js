@@ -10,7 +10,7 @@ const bcrypt = require('bcrypt-nodejs');
 const is = require('is_js');
 const mongoose = require('mongoose');
 
-router.get('/', async function(req, res, next) {
+router.get('/', async function(req, res) {
 
     try {
         let users = await Users.find({});
@@ -21,7 +21,7 @@ router.get('/', async function(req, res, next) {
     }
 });
 
-router.post('/add', async function(req, res, next) {
+router.post('/add', async function(req, res) {
     let body = req.body;
     try {
         let findedUser = await Users.findOne({});
@@ -96,7 +96,7 @@ router.post('/add', async function(req, res, next) {
     }   
 });
 
-router.post('/update', async function(req, res, next) {
+router.post('/update', async function(req, res) {
   try{
         let body = req.body;
 
@@ -159,7 +159,7 @@ router.post('/update', async function(req, res, next) {
           }
         }
         
-        let updatedUser = await Users.findByIdAndUpdate(body._id, updates, { new: true });
+        await Users.findByIdAndUpdate(body._id, updates, { new: true });
 
         res.json(Response.successResponse({success: true}));
     } catch (error) {
@@ -168,7 +168,7 @@ router.post('/update', async function(req, res, next) {
     }
 });
 
-router.post('/delete', async function(req, res, next) {
+router.post('/delete', async function(req, res) {
     let body = req.body;
     if (!body._id) {
         let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
@@ -192,7 +192,7 @@ router.post('/delete', async function(req, res, next) {
     }
 });
 
-router.post('/firstadd', async function(req, res, next) {
+router.post('/firstadd', async function(req, res) {
 
     let findedUser = await Users.findOne({});
     if(findedUser) {
