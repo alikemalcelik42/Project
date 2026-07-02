@@ -9,6 +9,16 @@ router.post("/", (req, res, next) => {
 
         let body = req.body
         let query = {}
+        let skip = body.skip
+        let limit = body.limit
+
+        if(typeof body.skip !== "number") {
+            skip = 0;
+        }
+
+        if(typeof body.limit !== "number" || body.limit > 500) {
+            limit = 500;
+        }
 
         if(body.begin_date && body.end_date) {
             query.created_at = {
@@ -23,7 +33,7 @@ router.post("/", (req, res, next) => {
         }
         
 
-        let auditLogs = await AuditLogs.find(query, {limit: 500, skip: body.skip, sort: {created_at: -1}});
+        let auditLogs = await AuditLogs.find(query).sort({created_at: -1}).skip(skip).limit(limit);
         res.json(Response.successResponse(auditLogs));
     }
     catch {
