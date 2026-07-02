@@ -5,7 +5,7 @@ let instance = null;
 class AuditLogger {
     constructor() {
         if(!instance) {
-            instance = 1;
+            instance = this;
         }
         return instance;
     }
@@ -13,64 +13,46 @@ class AuditLogger {
     info(email, location, proc_type, log) {
         this.#saveToDb({
             level: Enums.LOG_LEVELS.INFO,
-            email: email,
-            location: location,
-            proc_type: proc_type,
-            log: log
-        });
+            email, location, proc_type, log
+        })
     }
 
     warn(email, location, proc_type, log) {
         this.#saveToDb({
             level: Enums.LOG_LEVELS.WARN,
-            email: email,
-            location: location,
-            proc_type: proc_type,
-            log: log
+            email, location, proc_type, log
         })
     }
 
     error(email, location, proc_type, log) {
         this.#saveToDb({
             level: Enums.LOG_LEVELS.ERROR,
-            email: email,
-            location: location,
-            proc_type: proc_type,
-            log: log
+            email, location, proc_type, log
         })
     }
 
     debug(email, location, proc_type, log) {
         this.#saveToDb({
             level: Enums.LOG_LEVELS.DEBUG,
-            email: email,
-            location: location,
-            proc_type: proc_type,
-            log: log
+            email, location, proc_type, log
         })
     }
 
     verbose(email, location, proc_type, log) {
         this.#saveToDb({
             level: Enums.LOG_LEVELS.VERBOSE,
-            email: email,
-            location: location,
-            proc_type: proc_type,
-            log: log
+            email, location, proc_type, log
         })
     }
 
     http(email, location, proc_type, log) {
         this.#saveToDb({
             level: Enums.LOG_LEVELS.HTTP,
-            email: email,
-            location: location,
-            proc_type: proc_type,
-            log: log
+            email, location, proc_type, log
         })
     }
 
-    #saveToDb(level, email, location, proc_type, log) {
+    #saveToDb({level, email, location, proc_type, log}) {
         AuditLogs.create({
             level,
             email,

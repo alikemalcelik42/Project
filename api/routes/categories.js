@@ -6,6 +6,7 @@ const CustomError = require('../lib/Error');
 const Enum = require('../config/Enum');
 const mongoose = require('mongoose');
 const AuditLogger = require("../lib/AuditLogger");
+const logger = require("../lib/logger/LoggerClass");
 
 router.get('/', async function(req, res, next) {
 
@@ -35,10 +36,12 @@ router.post('/add', async function(req, res, next) {
         await category.save();
 
         AuditLogger.info(req.user?.email, "Categories", "Add", category);
+        logger.info(req.user?.email, "Categories", "Add", category)
 
         res.json(Response.successResponse({success: true}));
     }
     catch (error) {
+        logger.error(req.user?.email, "Categories", "Add", error)
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);    
     }   
