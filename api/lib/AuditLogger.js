@@ -13,42 +13,60 @@ class AuditLogger {
     info(email, location, proc_type, log) {
         this.#saveToDb({
             level: Enums.LOG_LEVELS.INFO,
-            email, location, proc_type, log
-        })
+            email: email,
+            location: location,
+            proc_type: proc_type,
+            log: log
+        });
     }
 
     warn(email, location, proc_type, log) {
         this.#saveToDb({
             level: Enums.LOG_LEVELS.WARN,
-            email, location, proc_type, log
+            email: email,
+            location: location,
+            proc_type: proc_type,
+            log: log
         })
     }
 
     error(email, location, proc_type, log) {
         this.#saveToDb({
             level: Enums.LOG_LEVELS.ERROR,
-            email, location, proc_type, log
+            email: email,
+            location: location,
+            proc_type: proc_type,
+            log: log
         })
     }
 
     debug(email, location, proc_type, log) {
         this.#saveToDb({
             level: Enums.LOG_LEVELS.DEBUG,
-            email, location, proc_type, log
+            email: email,
+            location: location,
+            proc_type: proc_type,
+            log: log
         })
     }
 
     verbose(email, location, proc_type, log) {
         this.#saveToDb({
             level: Enums.LOG_LEVELS.VERBOSE,
-            email, location, proc_type, log
+            email: email,
+            location: location,
+            proc_type: proc_type,
+            log: log
         })
     }
 
     http(email, location, proc_type, log) {
         this.#saveToDb({
             level: Enums.LOG_LEVELS.HTTP,
-            email, location, proc_type, log
+            email: email,
+            location: location,
+            proc_type: proc_type,
+            log: log
         })
     }
 
@@ -63,4 +81,4 @@ class AuditLogger {
     }
 }
 
-module.exports = AuditLogger;
+module.exports = new AuditLogger();
