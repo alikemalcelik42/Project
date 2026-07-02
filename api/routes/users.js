@@ -16,7 +16,8 @@ router.get('/', async function(req, res, next) {
         let users = await Users.find({});
         res.json(Response.successResponse(users));
     } catch (error) {
-        res.status(error.code).json(Response.errorResponse(error));
+        let errorResponse = Response.errorResponse(error);
+        res.status(errorResponse.code).json(errorResponse);
     }
 });
 
@@ -171,6 +172,11 @@ router.post('/delete', async function(req, res, next) {
     let body = req.body;
     if (!body._id) {
         let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
+        return res.status(errorResponse.code).json(errorResponse);
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(body._id)) {
+        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is not valid"));
         return res.status(errorResponse.code).json(errorResponse);
     }
 

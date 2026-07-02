@@ -14,7 +14,8 @@ router.get('/', async function(req, res, next) {
         let roles = await Roles.find({});
         res.json(Response.successResponse(roles));
     } catch (error) {
-        res.status(error.code).json(Response.errorResponse(error));
+        let errorResponse = Response.errorResponse(error);
+        res.status(errorResponse.code).json(errorResponse);
     }
 });
 
@@ -101,6 +102,11 @@ router.post('/update', async function(req, res, next) {
         if(typeof body.is_active === "boolean") updates.is_active = body.is_active;
         
         let updatedRole = await Roles.findByIdAndUpdate(body._id, updates, { new: true });
+
+        if (!updatedRole) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "This role doesn't exist"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
 
         res.json(Response.successResponse({success: true}));
     } catch (error) {
