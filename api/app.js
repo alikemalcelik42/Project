@@ -9,8 +9,6 @@ if (process.env.NODE_ENV !== 'production')
 
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var auditLogsRouter = require('./routes/auditlogs'); 
 
 var app = express();
 
