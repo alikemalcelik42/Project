@@ -3,6 +3,7 @@ module.exports = {
     "PORT": process.env.PORT || 3000,
     "CONNECTION_STRING": process.env.CONNECTION_STRING || "mongodb://localhost/myapp",
     "JWT": {
-        "SECRET": "1234567"
+        "SECRET": "1234567",
+        "EXPIRE_TIME": !isNaN(parseInt(process.env.TOKEN_EXPIRE_TIME)) ? parseInt(process.env.TOKEN_EXPIRE_TIME) : 24*60*60
     }
 }

@@ -1,4 +1,9 @@
 const mongoose = require('mongoose');
+const {HTTP_CODES} = require("../../config/Enum");
+const is = require("is_js");
+const CustomError = require('../../lib/Error');
+const bcrypt = require('bcrypt-nodejs');
+
 
 const schema = new mongoose.Schema({
   email: {
@@ -34,7 +39,17 @@ const schema = new mongoose.Schema({
 });
 
 class Users extends mongoose.Model {
+  validateFieldsBeforeAuth(email, password) {
+    if(typeof password !== "string" || is.not.email(email)) {
+      throw new CustomError(HTTP_CODES.UNAUTHORIZED, "Validation Error", "Email or password wrong");
+    }
 
+    return null;
+  }
+
+  validatePassword(password) {
+    return bcrypt.compareSync(password, this.password);
+  }
 }
 
 schema.loadClass(Users);
