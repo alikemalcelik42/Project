@@ -57,21 +57,27 @@ router.post('/add', async function(req, res, next) {
 });
 
 router.post('/update', async function(req, res, next) {
-    let body = req.body;
+    try{
+        let body = req.body;
 
-    if (!body._id) {
-        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
-        return res.status(errorResponse.code).json(errorResponse);
-    }
-    
-    if(body.permissions && Array.isArray(body.permissions)) {
-
-
-        let permissions = await RolePrivileges.find({ role_id: body._id });  
+        if (!body._id) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
         
-        let removedPermissions = await permissions.filter(p => !body.permissions.includes(p.permission));
+        if (!mongoose.Types.ObjectId.isValid(body._id)) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is not valid"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
         
-        let newPermissions = await body.permissions.filter(x => !permissions.map(p => p.permission).includes(x));
+        if(body.permissions && Array.isArray(body.permissions)) {
+
+            let permissions = await RolePrivileges.find({ role_id: body._id });  
+            
+            let removedPermissions = await permissions.filter(p => !body.permissions.includes(p.permission));
+            
+            let newPermissions = await body.permissions.filter(x => !permissions.map(p => p.permission).includes(x));
+        }
 
         if(removedPermissions.length > 0) {
             let removedPermissionIds = removedPermissions.map(p => p._id);
@@ -88,9 +94,7 @@ router.post('/update', async function(req, res, next) {
                 await priv.save();
             }
         }
-    }
 
-    try {
         let updates = {}
         if(body.role_name) updates.role_name = body.role_name;
         if(typeof body.is_active === "boolean") updates.is_active = body.is_active;

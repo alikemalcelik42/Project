@@ -96,30 +96,30 @@ router.post('/add', async function(req, res, next) {
 });
 
 router.post('/update', async function(req, res, next) {
-    let body = req.body;
+  try{
+        let body = req.body;
 
-    if (!body._id) {
-        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
-        return res.status(errorResponse.code).json(errorResponse);
-    }
+        if (!body._id) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
 
-    if (!mongoose.Types.ObjectId.isValid(body._id)) {
-        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is not valid"));
-        return res.status(errorResponse.code).json(errorResponse);
-    }
+        if (!mongoose.Types.ObjectId.isValid(body._id)) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is not valid"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
 
-    let existingUser = await Users.findById(body._id);
-    if (!existingUser) {
-        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "This user don't exits"));
-        return res.status(errorResponse.code).json(errorResponse);
-    }
+        let existingUser = await Users.findById(body._id);
+        if (!existingUser) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "This user don't exits"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
 
-    if (is.not.email(body.email)) {
-          let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "email is not valid"));
-          return res.status(errorResponse.code).json(errorResponse);    
-    }
+        if (is.not.email(body.email)) {
+              let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "email is not valid"));
+              return res.status(errorResponse.code).json(errorResponse);    
+        }
 
-    try {
         let updates = {}
         if(body.email) updates.email = body.email;
         if(body.first_name) updates.first_name = body.first_name;
