@@ -270,7 +270,7 @@ router.post("/auth", async function (req, res) {
     let user = await Users.findOne({email: email});
     if(!user) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Email or password wrong");
 
-    if(!Users.validatePassword(password)) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Password wrong");
+    if(!user.validatePassword(password)) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Password wrong");
 
     let payload = {
         id: user._id,

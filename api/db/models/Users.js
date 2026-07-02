@@ -39,7 +39,7 @@ const schema = new mongoose.Schema({
 });
 
 class Users extends mongoose.Model {
-  validateFieldsBeforeAuth(email, password) {
+  static validateFieldsBeforeAuth(email, password) {
     if(typeof password !== "string" || is.not.email(email)) {
       throw new CustomError(HTTP_CODES.UNAUTHORIZED, "Validation Error", "Email or password wrong");
     }
