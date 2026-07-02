@@ -6,6 +6,7 @@ const CustomError = require('../lib/Error');
 const Enum = require('../config/Enum');
 const role_privileges = require('../config/role_privileges');
 const RolePrivileges = require('../db/models/RolePrivileges');
+const mongoose = require('mongoose');
 
 router.get('/', async function(req, res, next) {
 
@@ -77,21 +78,21 @@ router.post('/update', async function(req, res, next) {
             let removedPermissions = await permissions.filter(p => !body.permissions.includes(p.permission));
             
             let newPermissions = await body.permissions.filter(x => !permissions.map(p => p.permission).includes(x));
-        }
 
-        if(removedPermissions.length > 0) {
-            let removedPermissionIds = removedPermissions.map(p => p._id);
-            await RolePrivileges.deleteMany({ _id: { $in: removedPermissionIds } });
-        }
+            if(removedPermissions.length > 0) {
+                let removedPermissionIds = removedPermissions.map(p => p._id);
+                await RolePrivileges.deleteMany({ _id: { $in: removedPermissionIds } });
+            }
 
-        if(newPermissions.length > 0) {
-            for (let permission of newPermissions) {
-                let priv = new RolePrivileges({
-                    role_id: body._id,
-                    permission: permission,
-                    created_by: req.user?.id
-                });
-                await priv.save();
+            if(newPermissions.length > 0) {
+                for (let permission of newPermissions) {
+                    let priv = new RolePrivileges({
+                        role_id: body._id,
+                        permission: permission,
+                        created_by: req.user?.id
+                    });
+                    await priv.save();
+                }
             }
         }
 
