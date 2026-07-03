@@ -236,7 +236,7 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
             return res.status(errorResponse.code).json(errorResponse);
         }
 
-        if (is.not.email(body.email)) {
+        if (body.email && is.not.email(body.email)) {
               let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "email is not valid"));
               return res.status(errorResponse.code).json(errorResponse);    
         }
@@ -259,19 +259,19 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
 
           let userRoles = await UserRoles.find({ user_id: body._id });  
 
-          let removedRoles = await userRoles.filter(r => !body.roles.includes(r.role_id));
+          let removedRoles = await userRoles.filter(r => !body.roles.includes(r.role_id.toString()));
           
-          let newRoles = await body.roles.filter(x => !userRoles.map(r => r.role_id).includes(x));
+          let newRolesIds = await body.roles.filter(x => !userRoles.map(r => r.role_id.toString()).includes(x));
           
           if(removedRoles.length > 0) {
               let removedRolesIds = removedRoles.map(r => r._id);
               await UserRoles.deleteMany({ _id: { $in: removedRolesIds } });
           }
   
-          if(newRoles.length > 0) {
-              for (let role of newRoles) {
+          if(newRolesIds.length > 0) {
+              for (let roleId of newRolesIds) {
                   let userRole = new UserRoles({
-                    role_id: role.id,
+                    role_id: roleId,
                     user_id: body._id
                   });
                   await userRole.save();

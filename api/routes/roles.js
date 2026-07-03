@@ -83,18 +83,18 @@ router.post('/update', auth().checkRoles("role_update"), async function(req, res
             
             let removedPermissions = await permissions.filter(p => !body.permissions.includes(p.permission));
             
-            let newPermissions = await body.permissions.filter(x => !permissions.map(p => p.permission).includes(x));
+            let newPermissionsIds = await body.permissions.filter(x => !permissions.map(p => p.permission).includes(x));
 
             if(removedPermissions.length > 0) {
                 let removedPermissionIds = removedPermissions.map(p => p._id);
                 await RolePrivileges.deleteMany({ _id: { $in: removedPermissionIds } });
             }
 
-            if(newPermissions.length > 0) {
-                for (let permission of newPermissions) {
+            if(newPermissionsIds.length > 0) {
+                for (let permissionId of newPermissionsIds) {
                     let priv = new RolePrivileges({
                         role_id: body._id,
-                        permission: permission,
+                        permission: permissionId,
                         created_by: req.user?.id
                     });
                     await priv.save();
