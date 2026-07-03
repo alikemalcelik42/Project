@@ -52,14 +52,18 @@ class AuditLogger {
         })
     }
 
-    #saveToDb({level, email, location, proc_type, log}) {
-        AuditLogs.create({
-            level,
-            email,
-            location,
-            proc_type,
-            log
-        });
+    async #saveToDb({level, email, location, proc_type, log}) {
+        try {
+            await AuditLogs.create({
+                level,
+                email,
+                location,
+                proc_type,
+                log
+            });
+        } catch(error) {
+            console.log(error);
+        }
     }
 }
 

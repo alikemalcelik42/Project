@@ -13,6 +13,16 @@ class Response {
 
     static errorResponse(error, code) {
 
+        if(!error) {
+            return {
+                code: Enum.HTTP_CODES.INTERNAL_SERVER_ERROR,
+                error: {
+                    message: 'An error occurred',
+                    description: 'No additional information provided'
+                }
+            };
+        }
+
         if(error instanceof CustomError) {
             return {
                 code: error.code,

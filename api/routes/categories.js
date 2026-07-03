@@ -9,6 +9,8 @@ const AuditLogger = require("../lib/AuditLogger");
 const logger = require("../lib/logger/LoggerClass");
 const auth = require("../lib/auth");
 const emitter = require("../lib/Emitter");
+const _export = new (require("../lib/Export"))();
+const fs = require("fs");
 
 router.all("*", auth().authenticate(), (req, res, next) => {
     next();
@@ -108,6 +110,26 @@ router.post('/delete', auth().checkRoles("category_delete"), async function(req,
         AuditLogger.info(req.user?.email, "Categories", "Delete", {id:body._id});
 
         res.json(Response.successResponse({success: true}));
+    }   
+    catch (error) {
+        let errorResponse = Response.errorResponse(error);
+        res.status(errorResponse.code).json(errorResponse);
+    }
+});
+
+router.post('/export', auth().checkRoles("category_export"), async function(req, res, next) {
+    try {
+        let categories = await Categories.find({});
+        let excel =_export.toExcel(
+            ["CATEGORY_NAME", "IS ACTIVE", "CREATED BY", "CREATED_AT", "UPDATED_AT"],
+            ["category_name", "is_active", "created_by", "created_at", "updated_at"],
+            categories
+        );
+
+        let filePath = __dirname + "/../tmp/categories_excel_" + Date.now() + ".xlsx";
+        fs.writeFileSync(filePath, excel, "utf8");
+        res.download(filePath);
+        // fs.unlinkSync(filePath);
     }   
     catch (error) {
         let errorResponse = Response.errorResponse(error);
