@@ -23,7 +23,7 @@ module.exports = function() {
 
                 let userRoles = await UserRoles.find({ user_id: payload.id});
                 let rolePrivileges = await RolePrivileges.find({ role_id: {$in: userRoles.map(ur => ur.role_id)} });
-                let privileges = rolePrivileges.map(rp => privs.privileges.find(x => x == rp.permission));
+                let privileges = rolePrivileges.map(rp => privs.privileges.find(x => x.key == rp.permission));
 
                 done(null, {
                     id: user._id,
@@ -57,7 +57,7 @@ module.exports = function() {
                 let privileges = req.user.roles.map(x => x.key);
 
                 let i = 0;
-                while(i < expectedRoles.length && privileges.includes(expectedRoles[i])) {
+                while(i < expectedRoles.length && !privileges.includes(expectedRoles[i])) {
                     i++;
                 }
 
