@@ -35,7 +35,7 @@ module.exports = function() {
                 })
 
                 } else {
-                    done(new CustomError(HTTP_CODES.BAD_REQUEST, "Not Authenticated", "Not authenticated"), null);
+                    done(false, null);
                 }
         }
         catch(error) {

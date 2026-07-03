@@ -40,4 +40,9 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+app.use(function(err, req, res, next) {
+  let errorResponse = Response.errorResponse(err);
+  res.status(errorResponse.code || 500).json(errorResponse);
+});
+
 module.exports = app;
