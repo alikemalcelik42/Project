@@ -7,6 +7,11 @@ const Enum = require('../config/Enum');
 const mongoose = require('mongoose');
 const AuditLogger = require("../lib/AuditLogger");
 const logger = require("../lib/logger/LoggerClass");
+const auth = require("../lib/auth");
+
+router.all("*", auth().authenticate(), (req, res, next) => {
+    next();
+})
 
 router.get('/', async function(req, res, next) {
 

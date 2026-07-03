@@ -11,6 +11,111 @@ const is = require('is_js');
 const mongoose = require('mongoose');
 const config = require("../config")
 const jwt = require("jwt-simple");
+const auth = require("../lib/auth");
+
+router.post('/firstadd', async function(req, res) {
+
+    let findedUser = await Users.findOne({});
+    if(findedUser) {
+        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.CONFLICT, "Conflict", "A user already exists. First-time add is disabled."));
+        return res.status(errorResponse.code).json(errorResponse);
+    }
+
+    let body = req.body;
+    try {
+        if (!body.email) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "email is required"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
+        else if (!body.password) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "password is required"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
+        else if (!body.first_name) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "first_name is required"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
+        else if (!body.last_name) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "last_name is required"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
+        
+        if (is.not.email(body.email)) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "email is not valid"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
+
+        let existingUser = await Users.findOne({ email: body.email });
+        if (existingUser) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.CONFLICT, "Conflict", "A user with the same email already exists"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
+
+        let hashedPassword = bcrypt.hashSync(body.password, bcrypt.genSaltSync(8, null));
+
+        let user = new Users({
+            email: body.email,
+            first_name: body.first_name,
+            last_name: body.last_name,
+            password: hashedPassword,
+            is_active: true,
+            rank: body.rank || 0
+        });
+
+
+        let role = await Roles.create({
+            role_name: Enum.SUPER_ADMIN,
+            created_by: user._id
+        });
+
+        await UserRoles.create({
+            user_id: user._id,
+            role_id: role._id,
+        });
+
+        await user.save();
+        res.status(Enum.HTTP_CODES.CREATED).json(Response.successResponse({success: true}));
+    }
+    catch (error) {
+        let errorResponse = Response.errorResponse(error);
+        res.status(errorResponse.code).json(errorResponse);    
+    }   
+});
+
+router.post("/auth", async function (req, res) {
+    try {
+        let { email, password } = req.body;
+        Users.validateFieldsBeforeAuth(email, password);
+
+        let user = await Users.findOne({email: email});
+        if(!user) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Email or password wrong");
+
+        if(!user.validatePassword(password)) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Password wrong");
+
+        let payload = {
+            id: user._id,
+            exp: parseInt(Date.now() / 1000) + config.JWT.EXPIRE_TIME
+        }
+
+        let token = jwt.encode(payload, config.JWT.SECRET);
+
+        let userData = {
+            _id: user._id,
+            first_name: user.first_name,
+            last_name: user.last_name
+        }
+
+        res.json(Response.successResponse({token, user: userData}));
+    } catch(error) {
+        let errorResponse = Response.errorResponse(error);
+        res.status(errorResponse.code).json(errorResponse); 
+    }
+
+});
+
+router.all("*", auth().authenticate(), (req, res, next) => {
+    next();
+});
 
 router.get('/', async function(req, res) {
 
@@ -192,106 +297,6 @@ router.post('/delete', async function(req, res) {
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
     }
-});
-
-router.post('/firstadd', async function(req, res) {
-
-    let findedUser = await Users.findOne({});
-    if(findedUser) {
-        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.CONFLICT, "Conflict", "A user already exists. First-time add is disabled."));
-        return res.status(errorResponse.code).json(errorResponse);
-    }
-
-    let body = req.body;
-    try {
-        if (!body.email) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "email is required"));
-            return res.status(errorResponse.code).json(errorResponse);
-        }
-        else if (!body.password) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "password is required"));
-            return res.status(errorResponse.code).json(errorResponse);
-        }
-        else if (!body.first_name) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "first_name is required"));
-            return res.status(errorResponse.code).json(errorResponse);
-        }
-        else if (!body.last_name) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "last_name is required"));
-            return res.status(errorResponse.code).json(errorResponse);
-        }
-        
-        if (is.not.email(body.email)) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "email is not valid"));
-            return res.status(errorResponse.code).json(errorResponse);
-        }
-
-        let existingUser = await Users.findOne({ email: body.email });
-        if (existingUser) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.CONFLICT, "Conflict", "A user with the same email already exists"));
-            return res.status(errorResponse.code).json(errorResponse);
-        }
-
-        let hashedPassword = bcrypt.hashSync(body.password, bcrypt.genSaltSync(8, null));
-
-        let user = new Users({
-            email: body.email,
-            first_name: body.first_name,
-            last_name: body.last_name,
-            password: hashedPassword,
-            is_active: true,
-            rank: body.rank || 0
-        });
-
-
-        let role = await Roles.create({
-            role_name: Enum.SUPER_ADMIN,
-            created_by: user._id
-        });
-
-        await UserRoles.create({
-            user_id: user._id,
-            role_id: role._id,
-        });
-
-        await user.save();
-        res.status(Enum.HTTP_CODES.CREATED).json(Response.successResponse({success: true}));
-    }
-    catch (error) {
-        let errorResponse = Response.errorResponse(error);
-        res.status(errorResponse.code).json(errorResponse);    
-    }   
-});
-
-router.post("/auth", async function (req, res) {
-    try {
-        let { email, password } = req.body;
-        Users.validateFieldsBeforeAuth(email, password);
-
-        let user = await Users.findOne({email: email});
-        if(!user) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Email or password wrong");
-
-        if(!user.validatePassword(password)) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Password wrong");
-
-        let payload = {
-            id: user._id,
-            exp: parseInt(Date.now() / 1000) + config.JWT.EXPIRE_TIME
-        }
-
-        let token = jwt.encode(payload, config.JWT.SECRET);
-
-        let userData = {
-            _id: user._id,
-            first_name: user.first_name,
-            last_name: user.last_name
-        }
-
-        res.json(Response.successResponse({token, user: userData}));
-    } catch(error) {
-        let errorResponse = Response.errorResponse(error);
-        res.status(errorResponse.code).json(errorResponse); 
-    }
-
 });
 
 

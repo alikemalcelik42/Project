@@ -7,6 +7,11 @@ const Enum = require('../config/Enum');
 const role_privileges = require('../config/role_privileges');
 const RolePrivileges = require('../db/models/RolePrivileges');
 const mongoose = require('mongoose');
+const auth = require("../lib/auth");
+
+router.all("*", auth().authenticate(), (req, res, next) => {
+    next();
+});
 
 router.get('/', async function(req, res) {
 
