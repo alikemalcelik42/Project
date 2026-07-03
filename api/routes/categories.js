@@ -10,7 +10,22 @@ const logger = require("../lib/logger/LoggerClass");
 const auth = require("../lib/auth");
 const emitter = require("../lib/Emitter");
 const _export = new (require("../lib/Export"))();
+const _import = new (require("../lib/Import"))();
 const fs = require("fs");
+const multer = require("multer");
+const config = require("../config");
+const path = require("path");
+
+let multerStorage = multer.diskStorage({
+    destination: (req, file, next) => {
+        next(null, config.PATH.FILE_UPLOAD_PATH);
+    },
+    filename: (req, file, next) => {
+        next(null, file.fieldname + "_" + Date.now() + path.extname(file.originalname));
+    }, 
+});
+
+const upload = multer({storage: multerStorage}).single("im_file");
 
 router.all("*", auth().authenticate(), (req, res, next) => {
     next();
@@ -117,7 +132,7 @@ router.post('/delete', auth().checkRoles("category_delete"), async function(req,
     }
 });
 
-router.post('/export', auth().checkRoles("category_export"), async function(req, res, next) {
+router.post('/export', auth().checkRoles("category_view"), async function(req, res, next) {
     try {
         let categories = await Categories.find({});
         let excel =_export.toExcel(
@@ -130,6 +145,33 @@ router.post('/export', auth().checkRoles("category_export"), async function(req,
         fs.writeFileSync(filePath, excel, "utf8");
         res.download(filePath);
         // fs.unlinkSync(filePath);
+    }   
+    catch (error) {
+        let errorResponse = Response.errorResponse(error);
+        res.status(errorResponse.code).json(errorResponse);
+    }
+});
+
+router.post('/import', auth().checkRoles("category_add"), upload, async function(req, res, next) {
+    try {
+        let file = req.file;
+        let body = req.body;
+
+        let rows = _import.fromExcel(file.path);
+        rows = rows.slice(1);
+
+        for(let row of rows) {
+            if(row.length > 0) {
+                let [category_name, is_active, created_by, created_at, updated_at] = row;
+                await Categories.create({
+                    category_name: category_name,
+                    is_active: is_active,
+                    created_by: req.user?._id
+                });
+            }
+        }
+
+        res.status(Enum.HTTP_CODES.CREATED).json(Response.successResponse({success: true}, Enum.HTTP_CODES.CREATED));
     }   
     catch (error) {
         let errorResponse = Response.errorResponse(error);

@@ -5,5 +5,8 @@ module.exports = {
     "JWT": {
         "SECRET": "1234567",
         "EXPIRE_TIME": !isNaN(parseInt(process.env.TOKEN_EXPIRE_TIME)) ? parseInt(process.env.TOKEN_EXPIRE_TIME) : 24*60*60
+    },
+    "PATH": {
+        "FILE_UPLOAD_PATH": process.env.FILE_UPLOAD_PATH
     }
 }
