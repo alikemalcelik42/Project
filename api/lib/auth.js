@@ -35,7 +35,7 @@ module.exports = function() {
                 })
 
                 } else {
-                    done(false, null);
+                    done(null, false);
                 }
         }
         catch(error) {
@@ -50,7 +50,20 @@ module.exports = function() {
             return passport.initialize();
         },
         authenticate: function() {
-            return passport.authenticate("jwt", {session: false});
+            return (req, res, next) => {
+                passport.authenticate("jwt", { session: false }, (err, user) => {
+                    if (err) {
+                        let errorResponse = Response.errorResponse(err);
+                        return res.status(errorResponse.code).json(errorResponse);
+                    }
+                    if (!user) {
+                        let errorResponse = Response.errorResponse(new CustomError(HTTP_CODES.UNAUTHORIZED, "Not Authenticated", "Invalid or missing token"));
+                        return res.status(errorResponse.code).json(errorResponse);
+                    }
+                    req.user = user;
+                    next();
+                })(req, res, next);
+            };
         },
         checkRoles: (...expectedRoles) => {
             return (req, res, next) => {

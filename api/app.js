@@ -1,4 +1,3 @@
-var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -7,6 +6,9 @@ var logger = require('morgan');
 if (process.env.NODE_ENV !== 'production')
   require('dotenv').config();
 
+const Response = require('./lib/Response');
+const CustomError = require('./lib/Error');
+const { HTTP_CODES } = require('./config/Enum');
 
 var indexRouter = require('./routes/index');
 
@@ -26,20 +28,10 @@ app.use('/api', indexRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  next(createError(404));
+  next(new CustomError(HTTP_CODES.NOT_FOUND, "Not Found", "The requested resource was not found"));
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
-
+// error handler — API olduğumuz için her zaman projenin standart JSON formatını dönüyoruz
 app.use(function(err, req, res, next) {
   let errorResponse = Response.errorResponse(err);
   res.status(errorResponse.code || 500).json(errorResponse);
