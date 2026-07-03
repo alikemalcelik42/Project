@@ -2,7 +2,12 @@ var express = require('express');
 var router = express.Router();
 const Response = require('../lib/Response');
 const AuditLogs = require('../db/models/AuditLogs');
-const moment = require("moment")
+const moment = require("moment");
+const auth = require("../lib/auth");
+
+router.all("*", auth.authenticate(), (req, res, next) => {
+    next();
+})
 
 router.post("/", async (req, res, next) => {
     try {
