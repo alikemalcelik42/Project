@@ -35,7 +35,7 @@ module.exports = function() {
                 })
 
                 } else {
-                    done(new Error("User not found"), null);
+                    done(new CustomError(HTTP_CODES.BAD_REQUEST, "Not Authenticated", "Not authenticated"), null);
                 }
         }
         catch(error) {
