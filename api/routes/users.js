@@ -3,6 +3,8 @@ var router = express.Router();
 const Users = require('../db/models/Users');
 const UserRoles = require('../db/models/UserRoles');
 const Roles = require('../db/models/Roles');
+const RolePrivileges = require('../db/models/RolePrivileges');
+const privs = require("../config/role_privileges");
 const Response = require('../lib/Response');
 const CustomError = require('../lib/Error');
 const Enum = require('../config/Enum');
@@ -73,6 +75,17 @@ router.post('/firstadd', async function(req, res) {
             role_id: role._id,
         });
 
+        let permissions = privs.privileges.map(p => p.key);
+
+        for (let permission of permissions) {
+            let priv = new RolePrivileges({
+                role_id: role._id,
+                permission: permission,
+                created_by: user._id
+            });
+            await priv.save();
+        }
+
         await user.save();
         res.status(Enum.HTTP_CODES.CREATED).json(Response.successResponse({success: true}));
     }
@@ -117,7 +130,7 @@ router.all("*", auth().authenticate(), (req, res, next) => {
     next();
 });
 
-router.get('/', async function(req, res) {
+router.get('/', auth().checkRoles("user_view"), async function(req, res) {
 
     try {
         let users = await Users.find({});
@@ -128,7 +141,7 @@ router.get('/', async function(req, res) {
     }
 });
 
-router.post('/add', async function(req, res) {
+router.post('/add', auth().checkRoles("user_add"), async function(req, res) {
     let body = req.body;
     try {
         let findedUser = await Users.findOne({});
@@ -203,7 +216,7 @@ router.post('/add', async function(req, res) {
     }   
 });
 
-router.post('/update', async function(req, res) {
+router.post('/update', auth().checkRoles("user_update"), async function(req, res) {
   try{
         let body = req.body;
 
@@ -275,7 +288,7 @@ router.post('/update', async function(req, res) {
     }
 });
 
-router.post('/delete', async function(req, res) {
+router.post('/delete', auth().checkRoles("user_delete"), async function(req, res) {
     let body = req.body;
     if (!body._id) {
         let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));

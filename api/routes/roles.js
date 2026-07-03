@@ -13,7 +13,7 @@ router.all("*", auth().authenticate(), (req, res, next) => {
     next();
 });
 
-router.get('/', async function(req, res) {
+router.get('/', auth().checkRoles("role_view"), async function(req, res) {
 
     try {
         let roles = await Roles.find({});
@@ -24,7 +24,7 @@ router.get('/', async function(req, res) {
     }
 });
 
-router.post('/add', async function(req, res) {
+router.post('/add', auth().checkRoles("role_add"), async function(req, res) {
     let body = req.body;
     try {
         if (!body.role_name) {
@@ -63,7 +63,7 @@ router.post('/add', async function(req, res) {
     }   
 });
 
-router.post('/update', async function(req, res) {
+router.post('/update', auth().checkRoles("role_update"), async function(req, res) {
     try{
         let body = req.body;
 
@@ -120,7 +120,7 @@ router.post('/update', async function(req, res) {
     }
 });
 
-router.post('/delete', async function(req, res) {
+router.post('/delete', auth().checkRoles("role_delete"), async function(req, res) {
     let body = req.body;
     if (!body._id) {
         let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));

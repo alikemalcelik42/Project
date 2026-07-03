@@ -8,12 +8,13 @@ const mongoose = require('mongoose');
 const AuditLogger = require("../lib/AuditLogger");
 const logger = require("../lib/logger/LoggerClass");
 const auth = require("../lib/auth");
+const emitter = require("../lib/Emitter");
 
 router.all("*", auth().authenticate(), (req, res, next) => {
     next();
 })
 
-router.get('/', async function(req, res, next) {
+router.get('/', auth().checkRoles("category_view"), async function(req, res, next) {
 
     try {
         let categories = await Categories.find({});
@@ -24,7 +25,7 @@ router.get('/', async function(req, res, next) {
     }
 });
 
-router.post('/add', async function(req, res, next) {
+router.post('/add', auth().checkRoles("category_add"), async function(req, res, next) {
     let body = req.body;
     try {
         if (!body.category_name) {
@@ -41,7 +42,9 @@ router.post('/add', async function(req, res, next) {
         await category.save();
 
         AuditLogger.info(req.user?.email, "Categories", "Add", category);
-        logger.info(req.user?.email, "Categories", "Add", category)
+        logger.info(req.user?.email, "Categories", "Add", category);
+
+        emitter.getEmitter("notifications").emit("messages", {message: category.category_name + " is added" })
 
         res.json(Response.successResponse({success: true}));
     }
@@ -52,7 +55,7 @@ router.post('/add', async function(req, res, next) {
     }   
 });
 
-router.post('/update', async function(req, res, next) {
+router.post('/update', auth().checkRoles("category_update"), async function(req, res, next) {
     let body = req.body;
 
     if (!body._id) {
@@ -87,7 +90,7 @@ router.post('/update', async function(req, res, next) {
     }
 });
 
-router.post('/delete', async function(req, res, next) {
+router.post('/delete', auth().checkRoles("category_delete"), async function(req, res, next) {
     let body = req.body;
     if (!body._id) {
         let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
