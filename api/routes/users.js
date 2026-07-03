@@ -271,12 +271,7 @@ router.post("/auth", async function (req, res) {
         let user = await Users.findOne({email: email});
         if(!user) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Email or password wrong");
 
-        console.log(user.validatePassword(password));
-        console.log(user.password);
-        console.log(password);
-        await console.log(bcrypt.compareSync(user.password, password));
         if(!user.validatePassword(password)) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Password wrong");
-
 
         let payload = {
             id: user._id,

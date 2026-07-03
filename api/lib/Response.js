@@ -22,7 +22,7 @@ class Response {
                 }
             };
         }
-        else if(error.message.includes("E11000")) {
+        else if(error.message?.includes("E11000")) {
             return {
                 code: Enum.HTTP_CODES.CONFLICT,
                 error: {
@@ -32,7 +32,6 @@ class Response {
             };
         }
         
-        console.log(Enum.HTTP_CODES.INTERNAL_SERVER_ERROR);
         return {
             code : Enum.HTTP_CODES.INTERNAL_SERVER_ERROR,
             error: {
