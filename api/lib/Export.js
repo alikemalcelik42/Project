@@ -23,7 +23,7 @@ class Export {
             rows.push(cols);
         }
 
-        xlsx.build([{name: "Sheet", data: rows}]);
+        return xlsx.build([{name: "Sheet", data: rows}]);
     }
 }
 
