@@ -11,17 +11,5 @@ import { CommonModule } from '@angular/common';
   styleUrl: './app.scss'
 })
 export class App {
-  pageTitle:string = "Test aaa";
-  names:Array<String> = [
-    "Ali",
-    "Veli",
-    "Can"
-  ];
-  name = "";
-
-  ekle() {
-    if(this.name.trim()) {
-      this.names.push(this.name);
-    }
-  }
+  
 }
