@@ -8,6 +8,10 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.scss'
 })
 export class App {
-  protected readonly title = signal('front-end-app');
-  pageTitle = "Test aaa";
+  pageTitle:string = "Test aaa";
+  data = [
+    "Ali",
+    "Veli",
+    "Can"
+  ];
 }

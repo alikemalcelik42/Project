@@ -1,17 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test</title>
-</head>
-<body>
-  <h1>
-    Test
-  </h1>
-  <p>
-    {{pageTitle}}
-  </p>
-  <router-outlet></router-outlet>
-</body>
-</html>
+<h1>
+  Test
+</h1>
+<p>
+  {{pageTitle}}
+</p>
+<input type="text" [(ngModel) = "name"]>
+
+<ul>
+  <li *ngFor="let d of data"> {{ d }}</li>
+</ul>
+
+<router-outlet></router-outlet>
