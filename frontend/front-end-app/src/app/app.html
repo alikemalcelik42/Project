@@ -1,12 +1,12 @@
 <h1>
-  Test
-</h1>
-<p>
   {{pageTitle}}
-</p>
+</h1>
+
+<input type="text" [(ngModel)]="name">
+<button (click)="ekle()"></button>
 
 <ul>
-  <li *ngFor="let d of data"> {{ d }}</li>
+  <li *ngFor="let n of names"> {{ n }}</li>
 </ul>
 
 <router-outlet></router-outlet>
