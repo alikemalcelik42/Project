@@ -148,7 +148,6 @@ router.post('/export', auth().checkRoles("category_view"), async function(req, r
         let filePath = __dirname + "/../tmp/categories_excel_" + Date.now() + ".xlsx";
         fs.writeFileSync(filePath, excel, "utf8");
         res.download(filePath);
-        // fs.unlinkSync(filePath);
     }   
     catch (error) {
         logger.error(req.user?.email, "Categories", "Export", error);
@@ -171,7 +170,7 @@ router.post('/import', auth().checkRoles("category_add"), upload, async function
                 let category = await Categories.create({
                     category_name: category_name,
                     is_active: is_active,
-                    created_by: req.user?._id
+                    created_by: req.user?.id
                 });
                 AuditLogger.info(req.user?.email, "Categories", "Add", category);
                 logger.info(req.user?.email, "Categories", "Add", category);
