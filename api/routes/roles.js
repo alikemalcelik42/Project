@@ -30,14 +30,14 @@ router.get('/', auth().checkRoles("role_view"), async function(req, res) {
 router.get('/find/:id', auth().checkRoles("role_view"), async function(req, res) {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Id değeri geçersiz"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Id değeri geçersiz."));
             return res.status(errorResponse.code).json(errorResponse);
         }
 
         let role = await Roles.findById(req.params.id);
 
         if(!role) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Bu id değerine sahip rol bulunmuyor"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Bu id değerine sahip rol bulunmuyor."));
             return res.status(errorResponse.code).json(errorResponse);
         }
 
@@ -53,12 +53,12 @@ router.post('/add', auth().checkRoles("role_add"), async function(req, res) {
     let body = req.body;
     try {
         if (!body.role_name) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "role_name is required"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Role adı gerekli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
 
         if(!body.permissions || !Array.isArray(body.permissions) || body.permissions.length === 0) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "permissions is required and should be an array"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "İzinler gerekli ve bir dizi olmalı."));
             return res.status(errorResponse.code).json(errorResponse);
         }
 
@@ -97,12 +97,12 @@ router.post('/update', auth().checkRoles("role_update"), async function(req, res
         let body = req.body;
 
         if (!body._id) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id gerekli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
         
         if (!mongoose.Types.ObjectId.isValid(body._id)) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is not valid"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id doğru formatta değil."));
             return res.status(errorResponse.code).json(errorResponse);
         }
         
@@ -138,7 +138,7 @@ router.post('/update', auth().checkRoles("role_update"), async function(req, res
         let updatedRole = await Roles.findByIdAndUpdate(body._id, updates, { new: true });
 
         if (!updatedRole) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "This role doesn't exist"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Bu rol bulunamadı."));
             return res.status(errorResponse.code).json(errorResponse);
         }
 
@@ -156,7 +156,7 @@ router.post('/update', auth().checkRoles("role_update"), async function(req, res
 router.post('/delete', auth().checkRoles("role_delete"), async function(req, res) {
     let body = req.body;
     if (!body._id) {
-        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
+        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id gerekli"));
         return res.status(errorResponse.code).json(errorResponse);
     }
 

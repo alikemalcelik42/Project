@@ -21,37 +21,31 @@ router.post('/firstadd', async function(req, res) {
 
     let findedUser = await Users.findOne({});
     if(findedUser) {
-        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.CONFLICT, "Conflict", "A user already exists. First-time add is disabled."));
+        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.CONFLICT, "Conflict", "Zaten en az bir tane kullanıcı var. Bu servis aktif değil."));
         return res.status(errorResponse.code).json(errorResponse);
     }
 
     let body = req.body;
     try {
         if (!body.email) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "email is required"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Email gerekli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
         else if (!body.password) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "password is required"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Şifre gerekli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
         else if (!body.first_name) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "first_name is required"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "İsim gerekli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
         else if (!body.last_name) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "last_name is required"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Soy isim gerekli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
         
         if (is.not.email(body.email)) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "email is not valid"));
-            return res.status(errorResponse.code).json(errorResponse);
-        }
-
-        let existingUser = await Users.findOne({ email: body.email });
-        if (existingUser) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.CONFLICT, "Conflict", "A user with the same email already exists"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Email doğru formatta değil"));
             return res.status(errorResponse.code).json(errorResponse);
         }
 
@@ -178,38 +172,42 @@ router.post('/add', auth().checkRoles("user_add"), async function(req, res) {
     try {
         let findedUser = await Users.findOne({});
         if(!findedUser) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "No user found. You must use first add method."));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Hiç kullanıcı yok. İlk kullanıcı eklenmeli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
         if (!body.email) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "email is required"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Email gerekli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
         else if (!body.password) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "password is required"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Şifre gerekli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
         else if (!body.first_name) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "first_name is required"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "İsim gerekli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
         else if (!body.last_name) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "last_name is required"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Soy isim gerekli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
         else if(!body.roles || !Array.isArray(body.roles) || body.roles.length == 0) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "roles is required"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Roller gerekli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
         
         if (is.not.email(body.email)) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "email is not valid"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Email doğru formatta değil."));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
+        if(body.password.length < Enum.PASS_LENGTH) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Şifre en az " + Enum.PASS_LENGTH + " uzunluğunda olmalı."));
             return res.status(errorResponse.code).json(errorResponse);
         }
 
         let existingUser = await Users.findOne({ email: body.email });
         if (existingUser) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.CONFLICT, "Conflict", "A user with the same email already exists"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.CONFLICT, "Conflict", "Aynı email ile bir kullanıcı zaten bulunuyor."));
             return res.status(errorResponse.code).json(errorResponse);
         }
 
@@ -227,7 +225,7 @@ router.post('/add', auth().checkRoles("user_add"), async function(req, res) {
         let roles = await Roles.find({_id: { $in: body.roles }})
 
         if(roles.length == 0) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Rol id not matched"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Rol id eşleşmedi."));
             return res.status(errorResponse.code).json(errorResponse);
         }
         
@@ -257,23 +255,23 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
         let body = req.body;
 
         if (!body._id) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id gerekli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
 
         if (!mongoose.Types.ObjectId.isValid(body._id)) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is not valid"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id doğru formatta değil."));
             return res.status(errorResponse.code).json(errorResponse);
         }
 
         let existingUser = await Users.findById(body._id);
         if (!existingUser) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "This user don't exits"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Bu kullanıcı bulunamadı."));
             return res.status(errorResponse.code).json(errorResponse);
         }
 
         if (body.email && is.not.email(body.email)) {
-              let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "email is not valid"));
+              let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Email doğru formatta değil."));
               return res.status(errorResponse.code).json(errorResponse);    
         }
 
@@ -289,7 +287,7 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
           let updatedRoles = await Roles.find({_id: { $in: body.roles }});
 
           if(updatedRoles.length == 0) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Rol id not matched"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Rol id eşleşmedi."));
             return res.status(errorResponse.code).json(errorResponse);
           }
 
@@ -331,12 +329,12 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
 router.post('/delete', auth().checkRoles("user_delete"), async function(req, res) {
     let body = req.body;
     if (!body._id) {
-        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
+        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id gerekli."));
         return res.status(errorResponse.code).json(errorResponse);
     }
 
     if (!mongoose.Types.ObjectId.isValid(body._id)) {
-        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is not valid"));
+        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id doğru fromatta değil."));
         return res.status(errorResponse.code).json(errorResponse);
     }
 

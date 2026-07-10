@@ -70,7 +70,7 @@ router.post('/add', auth().checkRoles("category_add"), async function(req, res, 
     let body = req.body;
     try {
         if (!body.category_name) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "category_name is required"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Kategori ismi gerekli."));
             return res.status(errorResponse.code).json(errorResponse);
         }
 
@@ -85,7 +85,7 @@ router.post('/add', auth().checkRoles("category_add"), async function(req, res, 
         AuditLogger.info(req.user?.email, "Categories", "Add", category);
         logger.info(req.user?.email, "Categories", "Add", category);
 
-        emitter.getEmitter("notifications").emit("messages", {message: category.category_name + " is added" })
+        emitter.getEmitter("notifications").emit("messages", {message: category.category_name + " eklendi." })
 
         res.json(Response.successResponse({success: true}));
     }
@@ -100,12 +100,12 @@ router.post('/update', auth().checkRoles("category_update"), async function(req,
     let body = req.body;
 
     if (!body._id) {
-        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
+        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id gerekli"));
         return res.status(errorResponse.code).json(errorResponse);
     }
 
     if (!mongoose.Types.ObjectId.isValid(body._id)) {
-        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is not valid"));
+        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id doğru formatta değil."));
         return res.status(errorResponse.code).json(errorResponse);
     }
 
@@ -117,7 +117,7 @@ router.post('/update', auth().checkRoles("category_update"), async function(req,
         let updatedCategory = await Categories.findByIdAndUpdate(body._id, updates, { new: true });
 
         if (!updatedCategory) {
-            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "This category doesn't exist"));
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Kategori bulunamadı."));
             return res.status(errorResponse.code).json(errorResponse);
         }
 
@@ -135,12 +135,12 @@ router.post('/update', auth().checkRoles("category_update"), async function(req,
 router.post('/delete', auth().checkRoles("category_delete"), async function(req, res, next) {
     let body = req.body;
     if (!body._id) {
-        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is required"));
+        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id gerekli."));
         return res.status(errorResponse.code).json(errorResponse);
     }
 
     if (!mongoose.Types.ObjectId.isValid(body._id)) {
-        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id is not valid"));
+        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id doğru formatta değil."));
         return res.status(errorResponse.code).json(errorResponse);
     }
 
