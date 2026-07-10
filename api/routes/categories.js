@@ -43,16 +43,22 @@ router.get('/', auth().checkRoles("category_view"), async function(req, res, nex
     }
 });
 
-router.get('/find', auth().checkRoles("category_view"), async function(req, res, next) {
-
+router.get('/find/:id', auth().checkRoles("category_view"), async function(req, res, next) {
     try {
-        if(typeof req.body.id === "number") {
-            let category = await Categories.findById(req.body.id);
-            res.json(Response.successResponse(category));
-        } else {
-            let errorResponse = Response.errorResponse("Id değeri geçersiz", Enum.HTTP_CODES.BAD_REQUEST);
-            res.status(errorResponse.code).json(errorResponse);
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Id değeri geçersiz"));
+            return res.status(errorResponse.code).json(errorResponse);
         }
+
+        let category = await Categories.findById(req.params.id);
+
+        if(!category) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Bu id değerine sahip kategori bulunmuyor"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
+
+        res.json(Response.successResponse(category));
+
     } catch (error) {
         logger.error(req.user?.email, "Categories", "View", error);
         let errorResponse = Response.errorResponse(error);

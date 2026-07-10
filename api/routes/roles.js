@@ -27,16 +27,21 @@ router.get('/', auth().checkRoles("role_view"), async function(req, res) {
     }
 });
 
-router.get('/find', auth().checkRoles("role_view"), async function(req, res) {
-
+router.get('/find/:id', auth().checkRoles("role_view"), async function(req, res) {
     try {
-        if(typeof req.body.id === "number") {
-            let role = await Roles.findById(req.body.id);
-            res.json(Response.successResponse(role));
-        } else {
-            let errorResponse = Response.errorResponse("Id değeri geçersiz", Enum.HTTP_CODES.BAD_REQUEST);
-            res.status(errorResponse.code).json(errorResponse);
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Id değeri geçersiz"));
+            return res.status(errorResponse.code).json(errorResponse);
         }
+
+        let role = await Roles.findById(req.params.id);
+
+        if(!role) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Bu id değerine sahip rol bulunmuyor"));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
+
+        res.json(Response.successResponse(role));
     } catch (error) {
         logger.error(req.user?.email, "Roles", "View", error);
         let errorResponse = Response.errorResponse(error);
