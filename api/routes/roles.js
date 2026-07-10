@@ -27,6 +27,23 @@ router.get('/', auth().checkRoles("role_view"), async function(req, res) {
     }
 });
 
+router.get('/find', auth().checkRoles("role_view"), async function(req, res) {
+
+    try {
+        if(typeof req.body.id === "number") {
+            let role = await Roles.findById(req.body.id);
+            res.json(Response.successResponse(role));
+        } else {
+            let errorResponse = Response.errorResponse("Id değeri geçersiz", Enum.HTTP_CODES.BAD_REQUEST);
+            res.status(errorResponse.code).json(errorResponse);
+        }
+    } catch (error) {
+        logger.error(req.user?.email, "Roles", "View", error);
+        let errorResponse = Response.errorResponse(error);
+        res.status(errorResponse.code).json(errorResponse);
+    }
+});
+
 router.post('/add', auth().checkRoles("role_add"), async function(req, res) {
     let body = req.body;
     try {

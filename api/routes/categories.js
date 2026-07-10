@@ -43,6 +43,23 @@ router.get('/', auth().checkRoles("category_view"), async function(req, res, nex
     }
 });
 
+router.get('/find', auth().checkRoles("category_view"), async function(req, res, next) {
+
+    try {
+        if(typeof req.body.id === "number") {
+            let category = await Categories.findById(req.body.id);
+            res.json(Response.successResponse(category));
+        } else {
+            let errorResponse = Response.errorResponse("Id değeri geçersiz", Enum.HTTP_CODES.BAD_REQUEST);
+            res.status(errorResponse.code).json(errorResponse);
+        }
+    } catch (error) {
+        logger.error(req.user?.email, "Categories", "View", error);
+        let errorResponse = Response.errorResponse(error);
+        res.status(errorResponse.code).json(errorResponse);
+    }
+});
+
 router.post('/add', auth().checkRoles("category_add"), async function(req, res, next) {
     let body = req.body;
     try {
