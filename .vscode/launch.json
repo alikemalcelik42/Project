@@ -14,5 +14,6 @@
             ],
             "program": "${workspaceFolder}\\api\\bin\\www"
         }
-    ]
+    ],
+    "typescript.tsc.autoDetect": "off"
 }

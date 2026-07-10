@@ -8,6 +8,8 @@ const role_privileges = require('../config/role_privileges');
 const RolePrivileges = require('../db/models/RolePrivileges');
 const mongoose = require('mongoose');
 const auth = require("../lib/auth");
+const AuditLogger = require("../lib/AuditLogger");
+const logger = require("../lib/logger/LoggerClass");
 
 router.all("*", auth().authenticate(), (req, res, next) => {
     next();
@@ -19,6 +21,7 @@ router.get('/', auth().checkRoles("role_view"), async function(req, res) {
         let roles = await Roles.find({});
         res.json(Response.successResponse(roles));
     } catch (error) {
+        logger.error(req.user?.email, "Roles", "View", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
     }
@@ -55,9 +58,13 @@ router.post('/add', auth().checkRoles("role_add"), async function(req, res) {
             await priv.save();
         }
 
+        AuditLogger.info(req.user?.email, "Roles", "Add", role);
+        logger.info(req.user?.email, "Roles", "Add", role);
+
         res.json(Response.successResponse({success: true}));
     }
     catch (error) {
+        logger.error(req.user?.email, "Roles", "Add", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);    
     }   
@@ -113,8 +120,12 @@ router.post('/update', auth().checkRoles("role_update"), async function(req, res
             return res.status(errorResponse.code).json(errorResponse);
         }
 
+        AuditLogger.info(req.user?.email, "Roles", "Update", {id:body._id, updates:updates});
+        logger.info(req.user?.email, "Roles", "Update", {id:body._id, updates:updates});
+
         res.json(Response.successResponse({success: true}));
     } catch (error) {
+        logger.error(req.user?.email, "Roles", "Update", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
     }
@@ -129,9 +140,14 @@ router.post('/delete', auth().checkRoles("role_delete"), async function(req, res
 
     try {
         await Roles.findByIdAndDelete(body._id);
+
+        AuditLogger.info(req.user?.email, "Roles", "Delete", {id:body._id});
+        logger.info(req.user?.email, "Roles", "Delete", {id:body._id});
+
         res.json(Response.successResponse({success: true}));
     }   
     catch (error) {
+        logger.error(req.user?.email, "Roles", "Delete", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
     }

@@ -14,6 +14,8 @@ const mongoose = require('mongoose');
 const config = require("../config")
 const jwt = require("jwt-simple");
 const auth = require("../lib/auth");
+const AuditLogger = require("../lib/AuditLogger");
+const logger = require("../lib/logger/LoggerClass");
 
 router.post('/firstadd', async function(req, res) {
 
@@ -87,9 +89,14 @@ router.post('/firstadd', async function(req, res) {
         }
 
         await user.save();
+
+        AuditLogger.info(body.email, "Users", "FirstAdd", user);
+        logger.info(body.email, "Users", "FirstAdd", user);
+
         res.status(Enum.HTTP_CODES.CREATED).json(Response.successResponse({success: true}));
     }
     catch (error) {
+        logger.error(body?.email, "Users", "FirstAdd", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);    
     }   
@@ -120,6 +127,7 @@ router.post("/auth", async function (req, res) {
 
         res.json(Response.successResponse({token, user: userData}));
     } catch(error) {
+        logger.error(req.body?.email, "Users", "Auth", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse); 
     }
@@ -136,6 +144,7 @@ router.get('/', auth().checkRoles("user_view"), async function(req, res) {
         let users = await Users.find({});
         res.json(Response.successResponse(users));
     } catch (error) {
+        logger.error(req.user?.email, "Users", "View", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
     }
@@ -208,9 +217,13 @@ router.post('/add', auth().checkRoles("user_add"), async function(req, res) {
           });
         }
 
+        AuditLogger.info(req.user?.email, "Users", "Add", user);
+        logger.info(req.user?.email, "Users", "Add", user);
+
         res.status(Enum.HTTP_CODES.CREATED).json(Response.successResponse({success: true}));
     }
     catch (error) {
+        logger.error(req.user?.email, "Users", "Add", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);    
     }   
@@ -247,7 +260,7 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
         if(body.last_name) updates.last_name = body.last_name;
         if(body.password) updates.password = bcrypt.hashSync(body.password, bcrypt.genSaltSync(8, null));
         if(typeof body.is_active === "boolean") updates.is_active = body.is_active;
-        if(body.rank) updates.rank = body.rank;
+        if(typeof body.rank === "number") updates.rank = body.rank;
 
         if(body.roles && Array.isArray(body.roles) && body.roles.length != 0) {
           let updatedRoles = await Roles.find({_id: { $in: body.roles }});
@@ -281,8 +294,12 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
         
         await Users.findByIdAndUpdate(body._id, updates, { new: true });
 
+        AuditLogger.info(req.user?.email, "Users", "Update", {id:body._id, updates:updates});
+        logger.info(req.user?.email, "Users", "Update", {id:body._id, updates:updates});
+
         res.json(Response.successResponse({success: true}));
     } catch (error) {
+        logger.error(req.user?.email, "Users", "Update", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
     }
@@ -304,9 +321,14 @@ router.post('/delete', auth().checkRoles("user_delete"), async function(req, res
 
         await UserRoles.deleteMany({ user_id: body._id });
         await Users.findByIdAndDelete(body._id);
+
+        AuditLogger.info(req.user?.email, "Users", "Delete", {id:body._id});
+        logger.info(req.user?.email, "Users", "Delete", {id:body._id});
+
         res.json(Response.successResponse({success: true}));
     }   
     catch (error) {
+        logger.error(req.user?.email, "Users", "Delete", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
     }

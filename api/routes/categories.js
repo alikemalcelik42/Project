@@ -37,6 +37,7 @@ router.get('/', auth().checkRoles("category_view"), async function(req, res, nex
         let categories = await Categories.find({});
         res.json(Response.successResponse(categories));
     } catch (error) {
+        logger.error(req.user?.email, "Categories", "View", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
     }
@@ -66,7 +67,7 @@ router.post('/add', auth().checkRoles("category_add"), async function(req, res, 
         res.json(Response.successResponse({success: true}));
     }
     catch (error) {
-        logger.error(req.user?.email, "Categories", "Add", error)
+        logger.error(req.user?.email, "Categories", "Add", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);    
     }   
@@ -98,10 +99,11 @@ router.post('/update', auth().checkRoles("category_update"), async function(req,
         }
 
         AuditLogger.info(req.user?.email, "Categories", "Update", {id:body._id, updates:updates});
-
+        logger.info(req.user?.email, "Categories", "Update", {id:body._id, updates:updates});
 
         res.json(Response.successResponse({success: true}));
     } catch (error) {
+        logger.error(req.user?.email, "Categories", "Update", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
     }
@@ -123,10 +125,12 @@ router.post('/delete', auth().checkRoles("category_delete"), async function(req,
         await Categories.findByIdAndDelete(body._id);
 
         AuditLogger.info(req.user?.email, "Categories", "Delete", {id:body._id});
+        logger.info(req.user?.email, "Categories", "Delete", {id:body._id});
 
         res.json(Response.successResponse({success: true}));
     }   
     catch (error) {
+        logger.error(req.user?.email, "Categories", "Delete", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
     }
@@ -147,6 +151,7 @@ router.post('/export', auth().checkRoles("category_view"), async function(req, r
         // fs.unlinkSync(filePath);
     }   
     catch (error) {
+        logger.error(req.user?.email, "Categories", "Export", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
     }
@@ -163,17 +168,20 @@ router.post('/import', auth().checkRoles("category_add"), upload, async function
         for(let row of rows) {
             if(row.length > 0) {
                 let [category_name, is_active, created_by, created_at, updated_at] = row;
-                await Categories.create({
+                let category = await Categories.create({
                     category_name: category_name,
                     is_active: is_active,
                     created_by: req.user?._id
                 });
+                AuditLogger.info(req.user?.email, "Categories", "Add", category);
+                logger.info(req.user?.email, "Categories", "Add", category);
             }
         }
 
         res.status(Enum.HTTP_CODES.CREATED).json(Response.successResponse({success: true}, Enum.HTTP_CODES.CREATED));
     }   
     catch (error) {
+        logger.error(req.user?.email, "Categories", "Import", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
     }
