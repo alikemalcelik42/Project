@@ -10,13 +10,13 @@ class Import {
     fromExcel(filePath) {
         let workSheets = xlsx.parse(filePath);
         if(!workSheets || workSheets.length <= 0) {
-            throw new CustomError(HTTP_CODES.BAD_REQUEST, "Invalid Excel Format", "Excel format is invalid");
+            throw new CustomError(HTTP_CODES.BAD_REQUEST, "Invalid Excel Format", "Excel formatı yanlış.");
         }
 
         let rows = workSheets[0].data;
         
         if(!rows || rows.length <= 0) {
-            throw new CustomError(HTTP_CODES.BAD_REQUEST, "Excel File Empty", "Excel File is empty");
+            throw new CustomError(HTTP_CODES.BAD_REQUEST, "Excel File Empty", "Excel dosyası boş.");
         }
 
         return rows;

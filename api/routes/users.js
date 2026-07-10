@@ -49,6 +49,11 @@ router.post('/firstadd', async function(req, res) {
             return res.status(errorResponse.code).json(errorResponse);
         }
 
+        if(body.password.length < Enum.PASS_LENGTH) {
+            let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Şifre en az " + Enum.PASS_LENGTH + " uzunluğunda olmalı."));
+            return res.status(errorResponse.code).json(errorResponse);
+        }
+
         let hashedPassword = bcrypt.hashSync(body.password, bcrypt.genSaltSync(8, null));
 
         let user = new Users({
@@ -102,9 +107,9 @@ router.post("/auth", async function (req, res) {
         Users.validateFieldsBeforeAuth(email, password);
 
         let user = await Users.findOne({email: email});
-        if(!user) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Email or password wrong");
+        if(!user) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Bu emaile sahip kullanıcı yok.");
 
-        if(!user.validatePassword(password)) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Password wrong");
+        if(!user.validatePassword(password)) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Şifre hatalı.");
 
         let payload = {
             id: user._id,
@@ -273,6 +278,11 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
         if (body.email && is.not.email(body.email)) {
               let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Email doğru formatta değil."));
               return res.status(errorResponse.code).json(errorResponse);    
+        }
+
+        if (body.password && body.password.length < Enum.PASS_LENGTH) {
+              let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Şifre en az " + Enum.PASS_LENGTH + " uzunluğunda olmalı."));
+              return res.status(errorResponse.code).json(errorResponse);
         }
 
         let updates = {}

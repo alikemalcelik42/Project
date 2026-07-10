@@ -57,7 +57,7 @@ module.exports = function() {
                         return res.status(errorResponse.code).json(errorResponse);
                     }
                     if (!user) {
-                        let errorResponse = Response.errorResponse(new CustomError(HTTP_CODES.UNAUTHORIZED, "Not Authenticated", "Invalid or missing token"));
+                        let errorResponse = Response.errorResponse(new CustomError(HTTP_CODES.UNAUTHORIZED, "Not Authenticated", "Token eksik ya da doğru formatta değil."));
                         return res.status(errorResponse.code).json(errorResponse);
                     }
                     req.user = user;
@@ -75,7 +75,7 @@ module.exports = function() {
                 }
 
                 if(i >= expectedRoles.length) {
-                    let errorResponse = Response.errorResponse(new CustomError(HTTP_CODES.UNAUTHORIZED, "Need Permission", "Need permission"));
+                    let errorResponse = Response.errorResponse(new CustomError(HTTP_CODES.UNAUTHORIZED, "Need Permission", "Yetkiye ihtiyacın var."));
                     res.status(errorResponse.code).json(errorResponse);
                 } else {
                     return next();
