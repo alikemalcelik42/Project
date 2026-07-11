@@ -16,6 +16,14 @@ const jwt = require("jwt-simple");
 const auth = require("../lib/auth");
 const AuditLogger = require("../lib/AuditLogger");
 const logger = require("../lib/logger/LoggerClass");
+const { rateLimit } = require('express-rate-limit');
+
+const limiter = rateLimit({
+	windowMs: 1 * 60 * 1000,
+	limit: 1,
+	legacyHeaders: false,
+	ipv6Subnet: 56,
+})
 
 router.post('/firstadd', async function(req, res) {
 
@@ -101,12 +109,12 @@ router.post('/firstadd', async function(req, res) {
     }   
 });
 
-router.post("/auth", async function (req, res) {
+router.post("/auth", limiter, async function (req, res) {
     try {
         let { email, password } = req.body;
         Users.validateFieldsBeforeAuth(email, password);
 
-        let user = await Users.findOne({email: email}).select('+password');;
+        let user = await Users.findOne({email: email}).select('+password');
         if(!user) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Bu emaile sahip kullanıcı yok.");
 
         if(!user.validatePassword(password)) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Şifre hatalı.");
