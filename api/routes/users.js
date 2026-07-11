@@ -17,12 +17,22 @@ const auth = require("../lib/auth");
 const AuditLogger = require("../lib/AuditLogger");
 const logger = require("../lib/logger/LoggerClass");
 const { rateLimit } = require('express-rate-limit');
+const RateLimitMongo = require("rate-limit-mongo");
 
 const limiter = rateLimit({
+    store: new RateLimitMongo({
+        url: config.CONNECTION_STRING,
+        collectionName: "rateLimits",
+        expireTimeMs: 1 * 60 * 1000,
+    }),
 	windowMs: 1 * 60 * 1000,
-	limit: 1,
+	limit: 5,
 	legacyHeaders: false,
 	ipv6Subnet: 56,
+    handler: (req, res, next, options) => {
+		let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.TOO_MANY_REQUESTS, "Too Many Requests", "Çok fazla istek gönderdiniz. Lütfen daha sonra tekrar deneyin."));
+		res.status(errorResponse.code).json(errorResponse);
+	}
 })
 
 router.post('/firstadd', async function(req, res) {
