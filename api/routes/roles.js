@@ -170,14 +170,6 @@ router.post('/delete', auth().checkRoles("role_delete"), async function(req, res
 
     try {
         await Roles.findByIdAndDelete(body._id);
-        let rolePrivs = await RolePrivileges.find({role_id: body._id});
-        for(let rolePriv of rolePrivs) {
-            await RolePrivileges.findByIdAndDelete(rolePriv._id);
-        }
-        let userRoles = await UserRoles.find({role_id: body._id});
-        for(let userRole of userRoles) {
-            await UserRoles.findByIdAndDelete(userRole._id);
-        }
 
         AuditLogger.info(req.user?.email, "Roles", "Delete", {id:body._id});
         logger.info(req.user?.email, "Roles", "Delete", {id:body._id});

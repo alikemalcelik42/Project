@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const RolePrivileges = require('./RolePrivileges');
+const UserRoles = require('./UserRoles');
 
 const schema = new mongoose.Schema({
   role_name: {
@@ -31,7 +32,7 @@ class Roles extends mongoose.Model {
     await super.findByIdAndDelete(id);
     if (id)
       await RolePrivileges.deleteMany({ role_id: id });
-    
+      await UserRoles.deleteMany({ role_id: id });
   }
 }
 
