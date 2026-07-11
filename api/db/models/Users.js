@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const {HTTP_CODES} = require("../../config/Enum");
 const is = require("is_js");
 const CustomError = require('../../lib/Error');
-const bcrypt = require('bcrypt-nodejs');
+const bcrypt = require('bcryptjs');
 
 
 const schema = new mongoose.Schema({

@@ -2,6 +2,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var cors = require('cors');
 
 if (process.env.NODE_ENV !== 'production')
   require('dotenv').config();
@@ -17,6 +18,10 @@ var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+
+app.use(cors({
+  origin: process.env.CLIENT_URL || "http://localhost:4200",
+}));
 
 app.use(logger('dev'));
 app.use(express.json());

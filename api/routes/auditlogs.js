@@ -17,7 +17,7 @@ router.post("/", auth().checkRoles("auditlog_view"), async (req, res, next) => {
         let skip = body.skip
         let limit = body.limit
 
-        if(typeof body.skip !== "number") {
+        if(typeof body.skip !== "number" || body.skip < 0) {
             skip = 0;
         }
 

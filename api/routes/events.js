@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 const { HTTP_CODES } = require("../config/Enum");
 const emitter = require("../lib/Emitter");
+const logger = require("../lib/logger/LoggerClass");
 
 emitter.addEmitter("notifications");
 
@@ -25,7 +26,7 @@ router.get("/", async (req, res, next) => {
         })
 
     } catch(error) {
-
+        logger.error(req.user?.email, "Events", "Stream", error);
     }
 })
 
