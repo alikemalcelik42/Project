@@ -113,6 +113,14 @@ router.post('/update', auth().checkRoles("role_update"), async function(req, res
             let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "_id doğru formatta değil."));
             return res.status(errorResponse.code).json(errorResponse);
         }
+
+
+        let userRoles = UserRoles.find({user_id: req.user.id})
+        for(let userRole of userRoles) {
+            if(userRole.role_id == body._id) {
+                body.permissions = null;
+            }
+        }
         
         if(body.permissions && Array.isArray(body.permissions)) {
 

@@ -342,7 +342,7 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
 
         
 
-        if(req.user.id === body.id) {
+        if(req.user.id == body._id) {
             body.roles = null;
         }
 
