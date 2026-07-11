@@ -170,7 +170,10 @@ router.post('/export', auth().checkRoles("category_view"), async function(req, r
 
         let filePath = __dirname + "/../tmp/categories_excel_" + Date.now() + ".xlsx";
         fs.writeFileSync(filePath, excel, "utf8");
-        res.download(filePath);
+        res.download(filePath, (error) => {
+            if(error) throw error;
+            fs.unlink(filePath);
+        });
     }   
     catch (error) {
         logger.error(req.user?.email, "Categories", "Export", error);
@@ -180,16 +183,22 @@ router.post('/export', auth().checkRoles("category_view"), async function(req, r
 });
 
 router.post('/import', auth().checkRoles("category_add"), upload, async function(req, res, next) {
+    let file = req.file;
+    let body = req.body;
+
+    if(!file) {
+        let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Dosya gönderilmemiş."));
+        return res.status(errorResponse.code).json(errorResponse);
+    }
+
     try {
-        let file = req.file;
-        let body = req.body;
 
         let rows = _import.fromExcel(file.path);
         rows = rows.slice(1);
 
         for(let row of rows) {
             if(row.length > 0) {
-                let [category_name, is_active, created_by, created_at, updated_at] = row;
+                let [category_name, is_active] = row;
                 let category = await Categories.create({
                     category_name: category_name,
                     is_active: is_active,
@@ -206,6 +215,10 @@ router.post('/import', auth().checkRoles("category_add"), upload, async function
         logger.error(req.user?.email, "Categories", "Import", error);
         let errorResponse = Response.errorResponse(error);
         res.status(errorResponse.code).json(errorResponse);
+    } finally {
+        if(file?.path) {
+            fs.unlink(file.path);
+        }
     }
 });
 
