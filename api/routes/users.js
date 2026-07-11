@@ -340,6 +340,12 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
         if(typeof body.is_active === "boolean") updates.is_active = body.is_active;
         if(typeof body.rank === "number") updates.rank = body.rank;
 
+        
+
+        if(req.user.id === body.id) {
+            body.roles = null;
+        }
+
         if(body.roles && Array.isArray(body.roles) && body.roles.length != 0) {
           let updatedRoles = await Roles.find({_id: { $in: body.roles }});
 
@@ -349,10 +355,6 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
           }
 
           let userRoles = await UserRoles.find({ user_id: body._id });
-
-          if(req.user.id === body.id) {
-            body.roles = userRoles;
-          }
 
           let removedRoles = await userRoles.filter(r => !body.roles.includes(r.role_id.toString()));
           
