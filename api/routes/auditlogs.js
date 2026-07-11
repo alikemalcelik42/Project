@@ -21,7 +21,7 @@ router.post("/", auth().checkRoles("auditlog_view"), async (req, res, next) => {
             skip = 0;
         }
 
-        if(typeof body.limit !== "number" || body.limit > 500) {
+        if(typeof body.limit !== "number" || body.limit > 500 || body.limit < 1) {
             limit = 500;
         }
 
