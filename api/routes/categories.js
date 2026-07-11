@@ -171,8 +171,11 @@ router.post('/export', auth().checkRoles("category_view"), async function(req, r
         let filePath = __dirname + "/../tmp/categories_excel_" + Date.now() + ".xlsx";
         fs.writeFileSync(filePath, excel, "utf8");
         res.download(filePath, (error) => {
-            if(error) throw error;
-            fs.unlink(filePath);
+            fs.unlink(filePath, (unlinkError) => {
+                if(unlinkError) {
+                    logger.error(req.user?.email, "Categories", "Export", unlinkError);
+                }
+            });
         });
     }   
     catch (error) {
@@ -201,7 +204,7 @@ router.post('/import', auth().checkRoles("category_add"), upload, async function
                 let [category_name, is_active] = row;
                 let category = await Categories.create({
                     category_name: category_name,
-                    is_active: is_active,
+                    is_active: String(is_active).trim().toLowerCase() === "true",
                     created_by: req.user?.id
                 });
                 AuditLogger.info(req.user?.email, "Categories", "Add", category);
@@ -217,7 +220,11 @@ router.post('/import', auth().checkRoles("category_add"), upload, async function
         res.status(errorResponse.code).json(errorResponse);
     } finally {
         if(file?.path) {
-            fs.unlink(file.path);
+            fs.unlink(file.path, (unlinkError) => {
+                if(unlinkError) {
+                    logger.error(req.user?.email, "Categories", "Import", unlinkError);
+                }
+            });
         }
     }
 });
