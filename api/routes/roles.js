@@ -18,7 +18,11 @@ router.all("*", auth().authenticate(), (req, res, next) => {
 router.get('/', auth().checkRoles("role_view"), async function(req, res) {
 
     try {
-        let roles = await Roles.find({});
+        let roles = await Roles.find({}).lean();
+        for(let i=0;i<roles.length;i++) {
+            let permissions = await RolePrivileges.find({role_id: roles[i]._id});
+            roles[i].permissions = permissions;
+        }
         res.json(Response.successResponse(roles));
     } catch (error) {
         logger.error(req.user?.email, "Roles", "View", error);
@@ -40,6 +44,9 @@ router.get('/find/:id', auth().checkRoles("role_view"), async function(req, res)
             let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Bu id değerine sahip rol bulunmuyor."));
             return res.status(errorResponse.code).json(errorResponse);
         }
+
+        let permissions = await RolePrivileges.find({role_id: role._id});
+        role.permissions = permissions;
 
         res.json(Response.successResponse(role));
     } catch (error) {

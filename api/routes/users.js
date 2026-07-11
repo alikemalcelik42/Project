@@ -140,7 +140,22 @@ router.all("*", auth().authenticate(), (req, res, next) => {
 router.get('/', auth().checkRoles("user_view"), async function(req, res) {
 
     try {
-        let users = await Users.find({});
+        let users = await Users.find({}).lean();
+        for(let i=0;i<users.length;i++) {
+            let userRoles = await UserRoles.find({user_id: users[i]._id}).lean();
+            let roles = [];
+            for(let userRole of userRoles) {
+                let role = await Roles.findById(userRole.role_id).lean();
+                roles.push(role);
+            }
+
+            for(let i=0;i<roles.length;i++) {
+                let permissions = await RolePrivileges.find({role_id: roles[i]._id});
+                roles[i].permissions = permissions;
+            }
+
+            users[i].roles = roles;
+        }
         res.json(Response.successResponse(users));
     } catch (error) {
         logger.error(req.user?.email, "Users", "View", error);
@@ -163,6 +178,20 @@ router.get('/find/:id', auth().checkRoles("user_view"), async function(req, res)
             let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.BAD_REQUEST, "Bad Request", "Bu id değerine sahip kullanıcı bulunmuyor"));
             return res.status(errorResponse.code).json(errorResponse);
         }
+
+        let userRoles = await UserRoles.find({user_id: user._id}).lean();
+        let roles = [];
+        for(let userRole of userRoles) {
+            let role = await Roles.findById(userRole.role_id).lean();
+            roles.push(role);
+        }
+
+        for(let i=0;i<roles.length;i++) {
+            let permissions = await RolePrivileges.find({role_id: roles[i]._id});
+            roles[i].permissions = permissions;
+        }
+
+        user.roles = roles;
 
         res.json(Response.successResponse(user));
     } catch (error) {
