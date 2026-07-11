@@ -117,7 +117,7 @@ router.post('/update', auth().checkRoles("role_update"), async function(req, res
 
         let userRoles = await UserRoles.find({user_id: req.user.id})
         for(let userRole of userRoles) {
-            if(userRole.role_id == body._id) {
+            if(userRole.role_id.toString() == body._id) {
                 let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Unauthorized", "Kendi rolünü düzenleyemezsin."));
                 return res.status(errorResponse.code).json(errorResponse);
             }

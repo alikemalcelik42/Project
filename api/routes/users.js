@@ -340,12 +340,6 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
         if(typeof body.is_active === "boolean") updates.is_active = body.is_active;
         if(typeof body.rank === "number") updates.rank = body.rank;
 
-        
-
-        if(req.user.id == body._id) {
-            body.roles = null;
-        }
-
         if(body.roles && Array.isArray(body.roles) && body.roles.length != 0) {
           let updatedRoles = await Roles.find({_id: { $in: body.roles }});
 
@@ -359,6 +353,13 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
           let removedRoles = await userRoles.filter(r => !body.roles.includes(r.role_id.toString()));
           
           let newRolesIds = await body.roles.filter(x => !userRoles.map(r => r.role_id.toString()).includes(x));
+
+          if(req.user.id == body._id) {
+            if(newRolesIds.length > 0 || removedRoles.length > 0) {
+                let errorResponse = Response.errorResponse(new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Unauthorized", "Kullanıcı kendi rollerini güncelleyemez."));
+                return res.status(errorResponse.code).json(errorResponse);
+            }
+          }
           
           if(removedRoles.length > 0) {
               let removedRolesIds = removedRoles.map(r => r._id);
