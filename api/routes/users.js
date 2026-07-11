@@ -21,7 +21,7 @@ const RateLimitMongo = require("rate-limit-mongo");
 
 const limiter = rateLimit({
     store: new RateLimitMongo({
-        url: config.CONNECTION_STRING,
+        uri: config.CONNECTION_STRING,
         collectionName: "rateLimits",
         expireTimeMs: 1 * 60 * 1000,
     }),
@@ -348,7 +348,11 @@ router.post('/update', auth().checkRoles("user_update"), async function(req, res
             return res.status(errorResponse.code).json(errorResponse);
           }
 
-          let userRoles = await UserRoles.find({ user_id: body._id });  
+          let userRoles = await UserRoles.find({ user_id: body._id });
+
+          if(req.user.id === body.id) {
+            body.roles = userRoles;
+          }
 
           let removedRoles = await userRoles.filter(r => !body.roles.includes(r.role_id.toString()));
           
