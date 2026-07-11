@@ -30,9 +30,10 @@ class Roles extends mongoose.Model {
 
   static async findByIdAndDelete(id) {
     await super.findByIdAndDelete(id);
-    if (id)
+    if (id) {
       await RolePrivileges.deleteMany({ role_id: id });
       await UserRoles.deleteMany({ role_id: id });
+    }
   }
 }
 

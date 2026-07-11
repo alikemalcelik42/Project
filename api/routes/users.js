@@ -106,7 +106,7 @@ router.post("/auth", async function (req, res) {
         let { email, password } = req.body;
         Users.validateFieldsBeforeAuth(email, password);
 
-        let user = await Users.findOne({email: email});
+        let user = await Users.findOne({email: email}).select('+password');;
         if(!user) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Bu emaile sahip kullanıcı yok.");
 
         if(!user.validatePassword(password)) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation Error", "Şifre hatalı.");
